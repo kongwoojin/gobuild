@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -38,8 +39,7 @@ func main() {
 		log.Println(err)
 	}
 
-	slicedPath := strings.Split(path, PATH_SEPARATOR)
-	projectName := slicedPath[len(slicedPath)-1]
+	projectName := filepath.Base(path)
 
 	var outputFileName string
 	if strings.HasSuffix(*fileOutput, "\\") || strings.HasSuffix(*fileOutput, "/") {
