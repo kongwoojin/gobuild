@@ -25,6 +25,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	hasCmdStructure := false
+
 	var fileExtension string
 
 	switch *platform {
@@ -41,6 +43,12 @@ func main() {
 
 	projectName := filepath.Base(path)
 
+	if projectName == "cmd" {
+		hasCmdStructure = true
+		slicedPath := strings.Split(path, PATH_SEPARATOR)
+		projectName = slicedPath[len(slicedPath)-2]
+	}
+
 	var outputFileName string
 	if strings.HasSuffix(*fileOutput, "\\") || strings.HasSuffix(*fileOutput, "/") {
 		outputFileName = fmt.Sprintf("%[1]s_%[2]s-%[3]s%[4]s", projectName, *platform, *architecture, fileExtension)
@@ -48,7 +56,13 @@ func main() {
 		outputFileName = ""
 	}
 
-	buildCommand := fmt.Sprintf("go build -o %[1]s%[3]s%[2]s%[4]s", path, *fileOutput, PATH_SEPARATOR, outputFileName)
+	outputPath := *fileOutput
+
+	if hasCmdStructure {
+		outputPath = ".." + PATH_SEPARATOR + *fileOutput
+	}
+
+	buildCommand := fmt.Sprintf("go build -o %[1]s%[3]s%[2]s%[4]s", path, outputPath, PATH_SEPARATOR, outputFileName)
 
 	if envErr := os.Setenv("GOARCH", *architecture); envErr != nil {
 		fmt.Println(err)
@@ -74,6 +88,6 @@ func main() {
 	if cmdErr := cmd.Run(); cmdErr != nil {
 		fmt.Printf("%s\n%s", cmdErr.Error(), stderr.String())
 	} else {
-		fmt.Printf("Build completed!\nFile saved at %[1]s%[2]s!\n", *fileOutput, outputFileName)
+		fmt.Printf("Build completed!\nFile saved at %[1]s%[2]s!\n", outputPath, outputFileName)
 	}
 }
